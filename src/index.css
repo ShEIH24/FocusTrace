@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0; overflow: hidden; }
+
+  :root {
+    --scrollbar-thumb: #3f3f46;
+    --scrollbar-track: transparent;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+  ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+
+  .light ::-webkit-scrollbar-thumb { background: #d4d4d8; }
+  .light ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800;
+  }
+  .card-elevated {
+    @apply rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700;
+  }
+  .input-base {
+    @apply w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm
+           bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100
+           focus:outline-none focus:ring-2 focus:ring-accent-500/40 focus:border-accent-500
+           transition-all placeholder-zinc-400 dark:placeholder-zinc-600;
+  }
+  .btn-primary {
+    @apply px-4 py-2 rounded-lg bg-accent-500 hover:bg-accent-600 active:bg-accent-700
+           text-white text-sm font-medium transition-all duration-150 disabled:opacity-40;
+  }
+  .btn-ghost {
+    @apply px-3 py-1.5 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-400
+           hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-150;
+  }
+  .text-muted { @apply text-zinc-500 dark:text-zinc-400; }
+  .text-label { @apply text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500; }
+  .section-title { @apply text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider; }
+}

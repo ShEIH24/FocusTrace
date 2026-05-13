@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FocusTrace</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="header">
+    <div class="logo">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <rect width="20" height="20" rx="5" fill="url(#grad)"/>
+        <circle cx="10" cy="10" r="5" stroke="white" stroke-width="1.5" fill="none"/>
+        <circle cx="10" cy="10" r="2" fill="white"/>
+        <defs>
+          <linearGradient id="grad" x1="0" y1="0" x2="20" y2="20">
+            <stop offset="0%" stop-color="#6366f1"/>
+            <stop offset="100%" stop-color="#7c3aed"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <span class="title">FocusTrace</span>
+    <label class="toggle" title="Enable/disable tracking">
+      <input type="checkbox" id="enabledToggle" />
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="status-row">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">Disconnected</span>
+  </div>
+
+  <div class="section">
+    <label class="label" for="tokenInput">Connection token</label>
+    <div class="token-row">
+      <input type="password" id="tokenInput" placeholder="Paste token from FocusTrace settings" />
+      <button id="showToken" title="Show token">👁</button>
+    </div>
+    <p class="hint">Find this in FocusTrace → Settings → Browser Tracking</p>
+  </div>
+
+  <button id="saveBtn" class="save-btn">Save</button>
+
+  <div class="current-tab" id="currentTab" style="display:none">
+    <div class="tab-label">Currently tracking</div>
+    <div class="tab-url" id="tabUrl"></div>
+    <div class="tab-category" id="tabCategory"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

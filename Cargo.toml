@@ -1,0 +1,18 @@
+[workspace]
+members = ["src-tauri"]
+resolver = "2"
+
+# ── Release profile ───────────────────────────────────────────────────────────
+# Applied to all workspace members. Gives maximum optimization and the
+# smallest possible binary for the distributed installers.
+[profile.release]
+opt-level     = 3       # maximum speed optimisation
+lto           = true    # full LTO: cross-crate inlining, dead-code stripping
+codegen-units = 1       # single codegen unit → best inlining, slow compile
+strip         = true    # strip debug symbols → smaller binary
+panic         = "abort" # no stack-unwinding machinery → smaller binary
+
+# Dev stays fast for iteration.
+[profile.dev]
+opt-level = 0
+debug     = true
