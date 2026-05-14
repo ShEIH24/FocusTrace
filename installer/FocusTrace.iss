@@ -1,14 +1,15 @@
 ; ============================================================================
 ; FocusTrace – скрипт установщика Inno Setup 6
-; https://github.com/ShEIH24
+; https://github.com/ShEIH24/FocusTrace
 ; ============================================================================
 
 #define AppName      "FocusTrace"
 #define AppVersion   "0.1.0"
 #define AppPublisher "ShEIH24"
-#define AppURL       "https://github.com/ShEIH24"
+#define AppURL       "https://github.com/ShEIH24/FocusTrace"
 #define AppExeName   "focus-trace.exe"
 #define BinDir       "..\target\release"
+#define ReadmeURL    "https://github.com/ShEIH24/FocusTrace/blob/main/README.md"
 
 [Setup]
 AppId={{8F3A1B2C-4D5E-6F7A-8B9C-0D1E2F3A4B5C}
@@ -48,7 +49,6 @@ ShowLanguageDialog=no
 ChangesAssociations=no
 DisableWelcomePage=no
 
-; Лицензионный файл — Inno Setup сам покажет его как страницу соглашения
 LicenseFile=assets\LICENSE.txt
 
 [Languages]
@@ -61,8 +61,8 @@ LicenseLabel=Пожалуйста, внимательно прочитайте �
 LicenseLabel3=Прокрутите вниз, чтобы ознакомиться со всем соглашением. Чтобы продолжить установку, вы должны принять условия соглашения.
 LicenseAccepted=Я &принимаю условия соглашения
 LicenseNotAccepted=Я &не принимаю условия соглашения
-FinishedHeadingLabel=Завершение установки {#AppName}
-FinishedLabel=Установка {#AppName} успешно завершена.%n%nЗапустите приложение, выбрав соответствующий значок.
+FinishedHeadingLabel=Установка {#AppName} завершена
+FinishedLabel=Установка {#AppName} {#AppVersion} успешно завершена.%n%nЗапустите приложение, выбрав соответствующий значок.%n%nСовет: установите браузерное расширение, чтобы отслеживать посещаемые сайты — инструкция в README на GitHub.
 ClickFinish=Нажмите «Завершить» для выхода из мастера установки.
 SelectDirLabel3=Программа будет установлена в следующую папку.
 SelectDirBrowseLabel=Нажмите «Далее», чтобы продолжить. Если вы хотите выбрать другую папку, нажмите «Обзор».
@@ -90,8 +90,14 @@ Name: "{autodesktop}\{#AppName}";   Filename: "{app}\{#AppExeName}"; Tasks: desk
 Name: "{userstartup}\{#AppName}";   Filename: "{app}\{#AppExeName}"; Tasks: startupentry
 
 [Run]
+; Установка WebView2 если отсутствует
 Filename: "{tmp}\MicrosoftEdgeWebview2Setup.exe"; Parameters: "/silent /install"; StatusMsg: "Установка Microsoft WebView2..."; Flags: waituntilterminated; Check: not IsWebView2Installed
+
+; Запуск приложения после установки
 Filename: "{app}\{#AppExeName}"; Description: "Запустить {#AppName}"; Flags: nowait postinstall skipifsilent unchecked
+
+; Открытие README на GitHub в браузере (опционально)
+Filename: "{#ReadmeURL}"; Description: "Открыть README на GitHub (инструкция по расширению и настройке)"; Flags: shellexec postinstall skipifsilent unchecked
 
 [Code]
 
@@ -115,8 +121,8 @@ begin
   begin
     WizardForm.FinishedLabel.Caption :=
       WizardForm.FinishedLabel.Caption + #13#10#13#10 +
-      'Исходный код и поддержка:' + #13#10 +
-      'https://github.com/ShEIH24';
+      'Исходный код, документация и поддержка:' + #13#10 +
+      '{#AppURL}';
   end;
 end;
 
