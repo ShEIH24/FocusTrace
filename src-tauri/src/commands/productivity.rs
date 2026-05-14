@@ -4,8 +4,8 @@ use crate::error::AppError;
 use crate::productivity::models::{
     GoalProgress, PomodoroTickPayload, ProductivityConfig, StreakInfo,
 };
-use crate::productivity::{goals, load_config, save_config};
 use crate::productivity::pomodoro::PomodoroCommand;
+use crate::productivity::{goals, load_config, save_config};
 use crate::state::AppState;
 
 // ---------------------------------------------------------------------------
@@ -14,38 +14,55 @@ use crate::state::AppState;
 
 #[tauri::command]
 pub async fn pomodoro_start(state: State<'_, AppState>) -> Result<(), AppError> {
-    state.pomodoro_tx.send(PomodoroCommand::Start).await
+    state
+        .pomodoro_tx
+        .send(PomodoroCommand::Start)
+        .await
         .map_err(|_| AppError::TrackingError("pomodoro worker unavailable".into()))
 }
 
 #[tauri::command]
 pub async fn pomodoro_pause(state: State<'_, AppState>) -> Result<(), AppError> {
-    state.pomodoro_tx.send(PomodoroCommand::Pause).await
+    state
+        .pomodoro_tx
+        .send(PomodoroCommand::Pause)
+        .await
         .map_err(|_| AppError::TrackingError("pomodoro worker unavailable".into()))
 }
 
 #[tauri::command]
 pub async fn pomodoro_resume(state: State<'_, AppState>) -> Result<(), AppError> {
-    state.pomodoro_tx.send(PomodoroCommand::Resume).await
+    state
+        .pomodoro_tx
+        .send(PomodoroCommand::Resume)
+        .await
         .map_err(|_| AppError::TrackingError("pomodoro worker unavailable".into()))
 }
 
 #[tauri::command]
 pub async fn pomodoro_stop(state: State<'_, AppState>) -> Result<(), AppError> {
-    state.pomodoro_tx.send(PomodoroCommand::Stop).await
+    state
+        .pomodoro_tx
+        .send(PomodoroCommand::Stop)
+        .await
         .map_err(|_| AppError::TrackingError("pomodoro worker unavailable".into()))
 }
 
 #[tauri::command]
 pub async fn pomodoro_skip(state: State<'_, AppState>) -> Result<(), AppError> {
-    state.pomodoro_tx.send(PomodoroCommand::Skip).await
+    state
+        .pomodoro_tx
+        .send(PomodoroCommand::Skip)
+        .await
         .map_err(|_| AppError::TrackingError("pomodoro worker unavailable".into()))
 }
 
 /// Returns the latest timer snapshot. The frontend polls this every second
 /// as a reliable alternative to Tauri events.
 #[tauri::command]
-pub async fn get_pomodoro_state(state: State<'_, AppState>) -> Result<PomodoroTickPayload, AppError> {
+pub async fn get_pomodoro_state(
+    state: State<'_, AppState>,
+) -> Result<PomodoroTickPayload, AppError> {
     Ok(state.pomodoro_state.read().await.clone())
 }
 
@@ -54,7 +71,9 @@ pub async fn get_pomodoro_state(state: State<'_, AppState>) -> Result<PomodoroTi
 // ---------------------------------------------------------------------------
 
 #[tauri::command]
-pub async fn get_productivity_config(state: State<'_, AppState>) -> Result<ProductivityConfig, AppError> {
+pub async fn get_productivity_config(
+    state: State<'_, AppState>,
+) -> Result<ProductivityConfig, AppError> {
     Ok(load_config(&state.pool).await)
 }
 
@@ -64,7 +83,8 @@ pub async fn update_productivity_config(
     config: ProductivityConfig,
 ) -> Result<(), AppError> {
     // Propagate new pomodoro config to the running worker.
-    let _ = state.pomodoro_tx
+    let _ = state
+        .pomodoro_tx
         .send(PomodoroCommand::UpdateConfig(config.pomodoro.clone()))
         .await;
 
@@ -100,9 +120,7 @@ pub async fn get_streak(state: State<'_, AppState>) -> Result<StreakInfo, AppErr
 // ---------------------------------------------------------------------------
 
 #[tauri::command]
-pub async fn toggle_focus_mode(
-    state: State<'_, AppState>,
-) -> Result<bool, AppError> {
+pub async fn toggle_focus_mode(state: State<'_, AppState>) -> Result<bool, AppError> {
     let new_state = {
         let mut cache = state.cache.write().await;
         cache.focus_mode_enabled = !cache.focus_mode_enabled;

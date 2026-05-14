@@ -7,7 +7,9 @@ pub fn aggregate_by_app(sessions: &[SessionInfo], total_ms: i64) -> Vec<AppBreak
     let mut map: HashMap<&str, (i64, usize, &str)> = HashMap::new();
 
     for s in sessions {
-        let e = map.entry(s.exe.as_str()).or_insert((0, 0, s.category.as_str()));
+        let e = map
+            .entry(s.exe.as_str())
+            .or_insert((0, 0, s.category.as_str()));
         e.0 += s.duration_ms;
         e.1 += 1;
     }
@@ -104,7 +106,10 @@ pub fn build_day_summary(
     // Productive time line — only when it differs from the top app
     let top_ms = apps.first().map(|a| a.total_ms).unwrap_or(0);
     if productive_ms > 0 && productive_ms != top_ms {
-        parts.push(format!("{} продуктивной работы", format_duration(productive_ms)));
+        parts.push(format!(
+            "{} продуктивной работы",
+            format_duration(productive_ms)
+        ));
     }
 
     if !focus_sessions.is_empty() {

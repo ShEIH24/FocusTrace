@@ -210,10 +210,7 @@ impl<'a> SessionRepository<'a> {
 
     /// Breaks a day into hourly buckets (0–23).
     /// Hours with no activity are omitted (sparse result set).
-    pub async fn hourly_breakdown(
-        &self,
-        date: NaiveDate,
-    ) -> Result<Vec<HourlyStats>, AppError> {
+    pub async fn hourly_breakdown(&self, date: NaiveDate) -> Result<Vec<HourlyStats>, AppError> {
         let (start, end) = day_bounds(date);
 
         let rows = sqlx::query_as::<_, HourlyStats>(
@@ -239,10 +236,7 @@ impl<'a> SessionRepository<'a> {
 
     /// Computes aggregate productivity metrics for `date`.
     /// Used by `MetricsRepository::refresh` to update the cache.
-    pub async fn compute_metrics(
-        &self,
-        date: NaiveDate,
-    ) -> Result<DailyMetricsInput, AppError> {
+    pub async fn compute_metrics(&self, date: NaiveDate) -> Result<DailyMetricsInput, AppError> {
         let (start, end) = day_bounds(date);
 
         // Aggregate totals in a single pass.
@@ -338,7 +332,10 @@ mod tests {
         // 31 switches in 1 hour → penalty
         let penalized = compute_focus_score(3_600_000, 3_600_000, 31);
         let not_penalized = compute_focus_score(3_600_000, 3_600_000, 10);
-        assert!(penalized < not_penalized, "high switch rate should reduce score");
+        assert!(
+            penalized < not_penalized,
+            "high switch rate should reduce score"
+        );
         assert!((penalized - 90.0).abs() < 0.01);
     }
 

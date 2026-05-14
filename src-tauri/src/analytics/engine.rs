@@ -1,7 +1,9 @@
 use chrono::NaiveDate;
 use sqlx::SqlitePool;
 
-use crate::analytics::aggregator::{aggregate_by_app, aggregate_by_category, build_day_summary, format_duration};
+use crate::analytics::aggregator::{
+    aggregate_by_app, aggregate_by_category, build_day_summary, format_duration,
+};
 use crate::analytics::config::AnalyticsConfig;
 use crate::analytics::focus::{detect_deep_work, detect_focus_sessions};
 use crate::analytics::models::{AppBreakdown, DayReport, WeekReport};
@@ -136,7 +138,11 @@ impl AnalyticsEngine {
 // Pure computation helpers (no async, called from spawn_blocking / rayon)
 // ---------------------------------------------------------------------------
 
-fn build_day_report(date: NaiveDate, sessions: Vec<SessionInfo>, config: &AnalyticsConfig) -> DayReport {
+fn build_day_report(
+    date: NaiveDate,
+    sessions: Vec<SessionInfo>,
+    config: &AnalyticsConfig,
+) -> DayReport {
     let total_ms: i64 = sessions.iter().map(|s| s.duration_ms).sum();
     let productive_ms: i64 = sessions
         .iter()
@@ -148,7 +154,9 @@ fn build_day_report(date: NaiveDate, sessions: Vec<SessionInfo>, config: &Analyt
         .filter(|s| s.category == "Distraction")
         .map(|s| s.duration_ms)
         .sum();
-    let neutral_ms = total_ms.saturating_sub(productive_ms).saturating_sub(distraction_ms);
+    let neutral_ms = total_ms
+        .saturating_sub(productive_ms)
+        .saturating_sub(distraction_ms);
 
     let score = Scorer::new(config).score(&sessions);
     let focus_sessions = detect_focus_sessions(&sessions, &config.focus);

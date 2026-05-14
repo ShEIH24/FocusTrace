@@ -19,5 +19,7 @@ pub async fn load_config(pool: &SqlitePool) -> ProductivityConfig {
 }
 
 pub async fn save_config(pool: &SqlitePool, cfg: &ProductivityConfig) -> Result<(), AppError> {
-    SettingsRepository::new(pool).set_json(CONFIG_KEY, cfg).await
+    SettingsRepository::new(pool)
+        .set_json(CONFIG_KEY, cfg)
+        .await
 }

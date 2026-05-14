@@ -51,12 +51,12 @@ pub async fn run(tx: mpsc::Sender<AppEvent>, poll_interval_ms: u64) {
             candidate = None;
         } else {
             // Foreground differs from confirmed; decide whether to debounce.
-            let same_as_candidate = candidate.as_ref().map_or(false, |(cand, _)| {
-                match &current {
+            let same_as_candidate = candidate
+                .as_ref()
+                .map_or(false, |(cand, _)| match &current {
                     Some(cur) => cand.pid == cur.pid && cand.title == cur.title,
                     None => false,
-                }
-            });
+                });
 
             if same_as_candidate {
                 // Candidate is holding steady — check if debounce period elapsed.
@@ -69,7 +69,11 @@ pub async fn run(tx: mpsc::Sender<AppEvent>, poll_interval_ms: u64) {
                                 path = %info.exe_path,
                                 "window confirmed"
                             );
-                            if tx.send(AppEvent::WindowChanged(info.clone())).await.is_err() {
+                            if tx
+                                .send(AppEvent::WindowChanged(info.clone()))
+                                .await
+                                .is_err()
+                            {
                                 break;
                             }
                             confirmed = Some(info);
@@ -89,8 +93,8 @@ pub async fn run(tx: mpsc::Sender<AppEvent>, poll_interval_ms: u64) {
         // Use the fast interval while debouncing or in the post-switch cooldown zone
         // so we catch rapid multi-step switches with low latency. Fall back to the
         // configured (slower) interval during idle stable periods to save CPU.
-        let in_fast_zone = last_confirmed_at
-            .map_or(false, |t| t.elapsed().as_millis() < FAST_COOLDOWN_MS);
+        let in_fast_zone =
+            last_confirmed_at.map_or(false, |t| t.elapsed().as_millis() < FAST_COOLDOWN_MS);
 
         let sleep_ms = if candidate.is_some() || in_fast_zone {
             FAST_POLL_MS

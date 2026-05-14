@@ -8,7 +8,9 @@ pub struct FocusScore;
 
 impl FocusScore {
     pub fn calculate(sessions: &[SessionInfo]) -> f32 {
-        Scorer::new(&AnalyticsConfig::default()).score(sessions).total as f32
+        Scorer::new(&AnalyticsConfig::default())
+            .score(sessions)
+            .total as f32
     }
 }
 
@@ -69,7 +71,11 @@ impl<'a> Scorer<'a> {
 
         // Component 4: continuity — longest focus block relative to 2-hour target (0–100)
         const TARGET_MS: f64 = 7_200_000.0;
-        let longest_ms = focus_sessions.iter().map(|s| s.duration_ms).max().unwrap_or(0);
+        let longest_ms = focus_sessions
+            .iter()
+            .map(|s| s.duration_ms)
+            .max()
+            .unwrap_or(0);
         let c4 = (longest_ms as f64 / TARGET_MS * 100.0).clamp(0.0, 100.0);
 
         let total = (c1 * w.productive_ratio

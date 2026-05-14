@@ -46,10 +46,10 @@ pub struct FocusSession {
 /// Classification of a focus session by duration.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum DepthLevel {
-    Shallow,  // < min_focus_ms
-    Focused,  // min_focus_ms – deep_work_ms
-    Deep,     // deep_work_ms – flow_ms
-    Flow,     // >= flow_ms
+    Shallow, // < min_focus_ms
+    Focused, // min_focus_ms – deep_work_ms
+    Deep,    // deep_work_ms – flow_ms
+    Flow,    // >= flow_ms
 }
 
 impl DepthLevel {

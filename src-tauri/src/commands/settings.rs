@@ -26,8 +26,7 @@ pub async fn update_config(
     }
 
     *cfg = serde_json::from_value(merged)?;
-    cfg.save(&data_dir)
-        .map_err(AppError::IoError)?;
+    cfg.save(&data_dir).map_err(AppError::IoError)?;
 
     Ok(())
 }

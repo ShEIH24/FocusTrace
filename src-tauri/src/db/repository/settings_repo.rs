@@ -22,11 +22,10 @@ impl<'a> SettingsRepository<'a> {
 
     /// Returns the value for `key`, or `None` if the key does not exist.
     pub async fn get(&self, key: &str) -> Result<Option<String>, AppError> {
-        let value: Option<String> =
-            sqlx::query_scalar("SELECT value FROM settings WHERE key = ?")
-                .bind(key)
-                .fetch_optional(self.pool)
-                .await?;
+        let value: Option<String> = sqlx::query_scalar("SELECT value FROM settings WHERE key = ?")
+            .bind(key)
+            .fetch_optional(self.pool)
+            .await?;
         Ok(value)
     }
 

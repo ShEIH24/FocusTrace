@@ -152,5 +152,10 @@ pub async fn compute_streak(
         })
         .map(|(date, _, _)| date.clone());
 
-    Ok(StreakInfo { current, longest, last_7_days, last_productive_date })
+    Ok(StreakInfo {
+        current,
+        longest,
+        last_7_days,
+        last_productive_date,
+    })
 }

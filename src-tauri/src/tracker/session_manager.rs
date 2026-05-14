@@ -41,7 +41,10 @@ impl SessionManager {
         if duration_ms < 200 {
             return None;
         }
-        let category = self.classifier.classify(&window.exe, &window.exe_path).to_string();
+        let category = self
+            .classifier
+            .classify(&window.exe, &window.exe_path)
+            .to_string();
         Some(SessionInfo {
             exe: window.exe,
             title: window.title,

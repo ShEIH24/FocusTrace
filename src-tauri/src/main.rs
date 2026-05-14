@@ -28,12 +28,11 @@ use state::{ActivityCache, AppState};
 fn main() {
     tracing_subscriber::fmt()
         .with_env_filter(
-            tracing_subscriber::EnvFilter::from_default_env()
-                .add_directive(
-                    "focus_trace=debug"
-                        .parse()
-                        .expect("valid tracing directive"),
-                ),
+            tracing_subscriber::EnvFilter::from_default_env().add_directive(
+                "focus_trace=debug"
+                    .parse()
+                    .expect("valid tracing directive"),
+            ),
         )
         .init();
 
@@ -76,10 +75,8 @@ fn main() {
             );
 
             // Init browser tracking (WS server spawned inside).
-            let browser = tauri::async_runtime::block_on(browser::init(
-                handle.clone(),
-                pool.clone(),
-            ));
+            let browser =
+                tauri::async_runtime::block_on(browser::init(handle.clone(), pool.clone()));
 
             // Capture the foreground window right now so the frontend sees an
             // active window immediately on startup (before the tracker polls).
@@ -112,7 +109,9 @@ fn main() {
             let update_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 tokio::time::sleep(std::time::Duration::from_secs(8)).await;
-                let Ok(updater) = update_handle.updater() else { return };
+                let Ok(updater) = update_handle.updater() else {
+                    return;
+                };
                 if let Ok(Some(update)) = updater.check().await {
                     let _ = update_handle.emit("update-available", update.version.clone());
                 }

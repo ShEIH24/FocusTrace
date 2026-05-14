@@ -36,8 +36,10 @@ impl RulesClassifier {
     /// User entries take effect on top of (not instead of) the comprehensive default lists.
     pub fn with_config(extra_productive: &[String], extra_distraction: &[String]) -> Self {
         let mut this = Self::with_defaults();
-        this.productive.extend(extra_productive.iter().map(|s| s.to_lowercase()));
-        this.distraction.extend(extra_distraction.iter().map(|s| s.to_lowercase()));
+        this.productive
+            .extend(extra_productive.iter().map(|s| s.to_lowercase()));
+        this.distraction
+            .extend(extra_distraction.iter().map(|s| s.to_lowercase()));
         this
     }
 
@@ -80,7 +82,7 @@ impl RulesClassifier {
                 "iterm".into(),
                 "cmd".into(),
                 "powershell".into(),
-                "pwsh".into(),       // PowerShell 7+
+                "pwsh".into(), // PowerShell 7+
                 "bash".into(),
                 "wsl".into(),
                 "wslhost".into(),
@@ -116,14 +118,14 @@ impl RulesClassifier {
                 // Adobe Creative Suite
                 "photoshop".into(),
                 "illustrator".into(),
-                "premiere".into(),    // Premiere Pro
-                "afterfx".into(),     // After Effects
+                "premiere".into(), // Premiere Pro
+                "afterfx".into(),  // After Effects
                 "indesign".into(),
                 "lightroom".into(),
                 "audition".into(),
                 "dreamweaver".into(),
                 "acrobat".into(),
-                "substance".into(),   // Substance Painter/Designer
+                "substance".into(), // Substance Painter/Designer
                 "media encoder".into(),
                 // 3D / CAD / Engineering
                 "blender".into(),
@@ -141,10 +143,10 @@ impl RulesClassifier {
                 "houdini".into(),
                 "modo".into(),
                 // Монтаж и видео
-                "resolve".into(),     // DaVinci Resolve
+                "resolve".into(), // DaVinci Resolve
                 "davinci".into(),
                 "kdenlive".into(),
-                "vegas".into(),       // Vegas Pro
+                "vegas".into(), // Vegas Pro
                 "handbrake".into(),
                 "shotcut".into(),
                 "openshot".into(),
@@ -156,7 +158,7 @@ impl RulesClassifier {
                 "ableton".into(),
                 "flstudio".into(),
                 "fl studio".into(),
-                "fl64".into(),        // FL Studio exe
+                "fl64".into(), // FL Studio exe
                 "protools".into(),
                 "pro tools".into(),
                 "cubase".into(),
@@ -198,7 +200,7 @@ impl RulesClassifier {
                 "netbeans".into(),
                 "codeblocks".into(),
                 // Рабочая коммуникация
-                "teams".into(),       // Microsoft Teams
+                "teams".into(), // Microsoft Teams
                 "zoom".into(),
                 "slack".into(),
                 "webex".into(),

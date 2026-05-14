@@ -101,8 +101,7 @@ impl IdleDetector {
                         idle_secs_at_onset = idle_secs;
 
                         // Back-date: idle actually began `idle_secs` ago.
-                        let at = Utc::now()
-                            - chrono::Duration::seconds(idle_secs as i64);
+                        let at = Utc::now() - chrono::Duration::seconds(idle_secs as i64);
 
                         info!(
                             idle_secs,
@@ -129,12 +128,12 @@ impl IdleDetector {
                         //                           `idle_secs` is the tail already counted
                         //                           inside `elapsed_since_onset`.
                         let elapsed = idle_onset.take().map_or(0, |t| t.elapsed().as_secs());
-                        let duration_secs =
-                            idle_secs_at_onset + elapsed.saturating_sub(idle_secs);
+                        let duration_secs = idle_secs_at_onset + elapsed.saturating_sub(idle_secs);
 
                         info!(duration_secs, idle_secs, "idle ended");
 
-                        if self.tx
+                        if self
+                            .tx
                             .send(AppEvent::IdleEnded { duration_secs })
                             .await
                             .is_err()
@@ -148,10 +147,7 @@ impl IdleDetector {
             let sleep_secs = poll_interval(phase, idle_secs, threshold_secs);
             debug!(
                 ?phase,
-                idle_secs,
-                threshold_secs,
-                sleep_secs,
-                "idle detector tick"
+                idle_secs, threshold_secs, sleep_secs, "idle detector tick"
             );
             sleep(Duration::from_secs(sleep_secs)).await;
         }

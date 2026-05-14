@@ -23,9 +23,17 @@ use crate::browser::{BrowserState, TabInfo};
 #[derive(Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 enum InboundMsg {
-    Auth { token: String },
-    TabUpdate { browser: String, url: String, title: String },
-    TabDeactivated { browser: String },
+    Auth {
+        token: String,
+    },
+    TabUpdate {
+        browser: String,
+        url: String,
+        title: String,
+    },
+    TabDeactivated {
+        browser: String,
+    },
     Ping,
 }
 
@@ -41,11 +49,7 @@ enum OutboundMsg {
 // Server entry point
 // ---------------------------------------------------------------------------
 
-pub async fn run(
-    app: AppHandle,
-    pool: SqlitePool,
-    browser_state: Arc<BrowserState>,
-) {
+pub async fn run(app: AppHandle, pool: SqlitePool, browser_state: Arc<BrowserState>) {
     let addr: SocketAddr = "127.0.0.1:9919".parse().expect("valid address");
 
     let listener = match TcpListener::bind(&addr).await {
@@ -104,18 +108,18 @@ async fn handle_connection(
     };
 
     let authed = match first_msg {
-        Message::Text(text) => {
-            match serde_json::from_str::<InboundMsg>(&text) {
-                Ok(InboundMsg::Auth { token }) if token == state.ws_token => true,
-                _ => false,
-            }
-        }
+        Message::Text(text) => match serde_json::from_str::<InboundMsg>(&text) {
+            Ok(InboundMsg::Auth { token }) if token == state.ws_token => true,
+            _ => false,
+        },
         _ => false,
     };
 
     if !authed {
-        let resp = serde_json::to_string(&OutboundMsg::AuthErr { reason: "invalid token" })
-            .unwrap_or_default();
+        let resp = serde_json::to_string(&OutboundMsg::AuthErr {
+            reason: "invalid token",
+        })
+        .unwrap_or_default();
         let _ = tx.send(Message::Text(resp.into())).await;
         return;
     }
@@ -126,8 +130,7 @@ async fn handle_connection(
     }
 
     // ── Message loop ─────────────────────────────────────────────────────────
-    let last_tab: Arc<Mutex<Option<(TabInfo, chrono::DateTime<Utc>)>>> =
-        Arc::new(Mutex::new(None));
+    let last_tab: Arc<Mutex<Option<(TabInfo, chrono::DateTime<Utc>)>>> = Arc::new(Mutex::new(None));
 
     while let Some(msg_result) = rx.next().await {
         let msg = match msg_result {
@@ -136,30 +139,23 @@ async fn handle_connection(
         };
 
         match msg {
-            Message::Text(text) => {
-                match serde_json::from_str::<InboundMsg>(&text) {
-                    Ok(InboundMsg::TabUpdate { browser, url, title }) => {
-                        on_tab_update(
-                            &url,
-                            &title,
-                            &browser,
-                            &last_tab,
-                            &state,
-                            &app,
-                            &pool,
-                        )
-                        .await;
-                    }
-                    Ok(InboundMsg::TabDeactivated { browser }) => {
-                        on_tab_deactivated(&browser, &last_tab, &state, &pool).await;
-                    }
-                    Ok(InboundMsg::Ping) => {
-                        let pong = serde_json::to_string(&OutboundMsg::Pong).unwrap_or_default();
-                        let _ = tx.send(Message::Text(pong.into())).await;
-                    }
-                    _ => {}
+            Message::Text(text) => match serde_json::from_str::<InboundMsg>(&text) {
+                Ok(InboundMsg::TabUpdate {
+                    browser,
+                    url,
+                    title,
+                }) => {
+                    on_tab_update(&url, &title, &browser, &last_tab, &state, &app, &pool).await;
                 }
-            }
+                Ok(InboundMsg::TabDeactivated { browser }) => {
+                    on_tab_deactivated(&browser, &last_tab, &state, &pool).await;
+                }
+                Ok(InboundMsg::Ping) => {
+                    let pong = serde_json::to_string(&OutboundMsg::Pong).unwrap_or_default();
+                    let _ = tx.send(Message::Text(pong.into())).await;
+                }
+                _ => {}
+            },
             Message::Close(_) => break,
             Message::Ping(data) => {
                 let _ = tx.send(Message::Pong(data)).await;

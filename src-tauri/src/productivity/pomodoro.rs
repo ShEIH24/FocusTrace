@@ -72,10 +72,10 @@ impl WorkerState {
 
     fn transition_to(&mut self, phase: PomodoroPhase) {
         let secs = match &phase {
-            PomodoroPhase::Working      => self.config.work_mins as u64 * 60,
-            PomodoroPhase::ShortBreak   => self.config.short_break_mins as u64 * 60,
-            PomodoroPhase::LongBreak    => self.config.long_break_mins as u64 * 60,
-            PomodoroPhase::Idle         => 0,
+            PomodoroPhase::Working => self.config.work_mins as u64 * 60,
+            PomodoroPhase::ShortBreak => self.config.short_break_mins as u64 * 60,
+            PomodoroPhase::LongBreak => self.config.long_break_mins as u64 * 60,
+            PomodoroPhase::Idle => 0,
         };
         self.phase = phase;
         self.remaining_secs = secs;
@@ -173,11 +173,26 @@ async fn tick(
     match completed_phase {
         PomodoroPhase::Working => {
             state.session_count += 1;
-            record_session(pool, "work", state.config.work_mins as u64 * 60_000, true, state.current_db_id.take()).await;
+            record_session(
+                pool,
+                "work",
+                state.config.work_mins as u64 * 60_000,
+                true,
+                state.current_db_id.take(),
+            )
+            .await;
 
             let use_long = state.session_count % state.config.sessions_until_long == 0;
-            let next = if use_long { PomodoroPhase::LongBreak } else { PomodoroPhase::ShortBreak };
-            let label = if use_long { "Long break time! You earned it." } else { "Short break time!" };
+            let next = if use_long {
+                PomodoroPhase::LongBreak
+            } else {
+                PomodoroPhase::ShortBreak
+            };
+            let label = if use_long {
+                "Long break time! You earned it."
+            } else {
+                "Short break time!"
+            };
 
             notify(app, "Pomodoro complete", label);
             state.transition_to(next.clone());
@@ -197,7 +212,8 @@ async fn tick(
                 (state.total_secs) * 1000,
                 true,
                 state.current_db_id.take(),
-            ).await;
+            )
+            .await;
 
             notify(app, "Break over", "Time to focus!");
             state.transition_to(PomodoroPhase::Working);
@@ -221,7 +237,10 @@ async fn tick(
 // ---------------------------------------------------------------------------
 
 #[allow(dead_code)]
-enum ControlFlow { Continue, Break }
+enum ControlFlow {
+    Continue,
+    Break,
+}
 
 async fn handle_command(
     cmd: PomodoroCommand,
@@ -231,7 +250,9 @@ async fn handle_command(
 ) -> ControlFlow {
     match cmd {
         PomodoroCommand::Start => {
-            if state.phase != PomodoroPhase::Idle { return ControlFlow::Continue; }
+            if state.phase != PomodoroPhase::Idle {
+                return ControlFlow::Continue;
+            }
             state.transition_to(PomodoroPhase::Working);
             state.current_db_id = open_db_session(pool, "work").await;
             emit_phase_changed(app, &state.phase_changed_payload());
@@ -257,7 +278,14 @@ async fn handle_command(
         PomodoroCommand::Stop => {
             if state.phase != PomodoroPhase::Idle {
                 let elapsed = (state.total_secs - state.remaining_secs) * 1000;
-                record_session(pool, state.phase.label(), elapsed as u64, false, state.current_db_id.take()).await;
+                record_session(
+                    pool,
+                    state.phase.label(),
+                    elapsed as u64,
+                    false,
+                    state.current_db_id.take(),
+                )
+                .await;
                 state.transition_to(PomodoroPhase::Idle);
                 emit_phase_changed(app, &state.phase_changed_payload());
                 info!("Pomodoro stopped");
@@ -265,14 +293,28 @@ async fn handle_command(
         }
 
         PomodoroCommand::Skip => {
-            if state.phase == PomodoroPhase::Idle { return ControlFlow::Continue; }
+            if state.phase == PomodoroPhase::Idle {
+                return ControlFlow::Continue;
+            }
             let elapsed = (state.total_secs - state.remaining_secs) * 1000;
-            record_session(pool, state.phase.label(), elapsed as u64, false, state.current_db_id.take()).await;
+            record_session(
+                pool,
+                state.phase.label(),
+                elapsed as u64,
+                false,
+                state.current_db_id.take(),
+            )
+            .await;
 
             let next = match state.phase {
                 PomodoroPhase::Working => {
-                    let use_long = (state.session_count + 1) % state.config.sessions_until_long == 0;
-                    if use_long { PomodoroPhase::LongBreak } else { PomodoroPhase::ShortBreak }
+                    let use_long =
+                        (state.session_count + 1) % state.config.sessions_until_long == 0;
+                    if use_long {
+                        PomodoroPhase::LongBreak
+                    } else {
+                        PomodoroPhase::ShortBreak
+                    }
                 }
                 _ => PomodoroPhase::Working,
             };
@@ -311,7 +353,10 @@ fn notify(app: &AppHandle, title: &str, body: &str) {
     if let Some(w) = app.get_webview_window("main") {
         let _ = w.request_user_attention(Some(tauri::UserAttentionType::Informational));
     }
-    if let Err(e) = app.emit("app-notification", serde_json::json!({ "title": title, "body": body })) {
+    if let Err(e) = app.emit(
+        "app-notification",
+        serde_json::json!({ "title": title, "body": body }),
+    ) {
         tracing::error!("emit app-notification: {e}");
     }
 }
@@ -369,8 +414,7 @@ async fn record_session(
         .execute(pool)
         .await;
     } else {
-        let started = Utc::now()
-            - chrono::Duration::milliseconds(duration_ms as i64);
+        let started = Utc::now() - chrono::Duration::milliseconds(duration_ms as i64);
         let _ = sqlx::query(
             "INSERT INTO pomodoro_sessions
                  (started_at, ended_at, duration_ms, phase, completed, interrupted)

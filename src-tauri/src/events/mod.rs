@@ -2,7 +2,9 @@ pub mod types;
 
 use tauri::{AppHandle, Emitter};
 
-use crate::events::types::{DistractionAlertPayload, MetricsUpdatedPayload, SessionEndedPayload, WindowInfo};
+use crate::events::types::{
+    DistractionAlertPayload, MetricsUpdatedPayload, SessionEndedPayload, WindowInfo,
+};
 
 pub fn emit_activity_updated(app: &AppHandle, info: &WindowInfo) {
     if let Err(e) = app.emit("activity-updated", info) {

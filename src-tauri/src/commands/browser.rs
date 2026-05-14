@@ -28,7 +28,20 @@ pub async fn get_browser_history(
     let start = format!("{date}T00:00:00+00:00");
     let end = format!("{date}T23:59:59+00:00");
 
-    let rows = sqlx::query_as::<_, (i64, String, i64, String, String, String, String, String, String)>(
+    let rows = sqlx::query_as::<
+        _,
+        (
+            i64,
+            String,
+            i64,
+            String,
+            String,
+            String,
+            String,
+            String,
+            String,
+        ),
+    >(
         "SELECT id, started_at, duration_ms, browser, url, domain, title, category, subcategory
          FROM browser_events
          WHERE started_at >= ? AND started_at <= ?
@@ -41,9 +54,21 @@ pub async fn get_browser_history(
 
     let result = rows
         .into_iter()
-        .map(|(id, started_at, duration_ms, browser, url, domain, title, category, subcategory)| {
-            BrowserEventRow { id, started_at, duration_ms, browser, url, domain, title, category, subcategory }
-        })
+        .map(
+            |(id, started_at, duration_ms, browser, url, domain, title, category, subcategory)| {
+                BrowserEventRow {
+                    id,
+                    started_at,
+                    duration_ms,
+                    browser,
+                    url,
+                    domain,
+                    title,
+                    category,
+                    subcategory,
+                }
+            },
+        )
         .collect();
 
     Ok(result)
@@ -74,13 +99,15 @@ pub async fn get_browser_domain_stats(
 
     let result = rows
         .into_iter()
-        .map(|(domain, category, subcategory, duration_ms, visits)| DomainStat {
-            domain,
-            category,
-            subcategory,
-            duration_ms,
-            visits,
-        })
+        .map(
+            |(domain, category, subcategory, duration_ms, visits)| DomainStat {
+                domain,
+                category,
+                subcategory,
+                duration_ms,
+                visits,
+            },
+        )
         .collect();
 
     Ok(result)
@@ -144,12 +171,14 @@ pub async fn get_browser_category_rules(
 
     let result = rows
         .into_iter()
-        .map(|(id, domain_pattern, category, subcategory)| UserCategoryRule {
-            id,
-            domain_pattern,
-            category,
-            subcategory,
-        })
+        .map(
+            |(id, domain_pattern, category, subcategory)| UserCategoryRule {
+                id,
+                domain_pattern,
+                category,
+                subcategory,
+            },
+        )
         .collect();
 
     Ok(result)
@@ -161,9 +190,13 @@ pub async fn categorize_url(
     url: String,
     state: State<'_, AppState>,
 ) -> Result<(String, String), AppError> {
-    let domain = crate::browser::category::extract_domain(&url)
-        .unwrap_or_else(|| url.clone());
-    let cat = state.browser.category_engine.lock().await.categorize(&domain);
+    let domain = crate::browser::category::extract_domain(&url).unwrap_or_else(|| url.clone());
+    let cat = state
+        .browser
+        .category_engine
+        .lock()
+        .await
+        .categorize(&domain);
     Ok((cat.category, cat.subcategory))
 }
 

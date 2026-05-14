@@ -8,10 +8,7 @@ use crate::error::AppError;
 use crate::state::AppState;
 
 #[tauri::command]
-pub async fn get_focus_score(
-    state: State<'_, AppState>,
-    date: String,
-) -> Result<f32, AppError> {
+pub async fn get_focus_score(state: State<'_, AppState>, date: String) -> Result<f32, AppError> {
     let date = parse_date(&date)?;
     AnalyticsEngine::new(state.pool.clone())
         .focus_score_for_date(date)
@@ -20,7 +17,9 @@ pub async fn get_focus_score(
 
 #[tauri::command]
 pub async fn get_weekly_summary(state: State<'_, AppState>) -> Result<WeeklySummary, AppError> {
-    AnalyticsEngine::new(state.pool.clone()).weekly_summary().await
+    AnalyticsEngine::new(state.pool.clone())
+        .weekly_summary()
+        .await
 }
 
 #[tauri::command]
@@ -29,7 +28,9 @@ pub async fn get_day_report(
     date: String,
 ) -> Result<DayReport, AppError> {
     let date = parse_date(&date)?;
-    AnalyticsEngine::new(state.pool.clone()).day_report(date).await
+    AnalyticsEngine::new(state.pool.clone())
+        .day_report(date)
+        .await
 }
 
 #[tauri::command]

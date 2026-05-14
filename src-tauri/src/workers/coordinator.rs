@@ -8,22 +8,18 @@ use tracing::{error, info};
 
 use crate::analytics::classifier::RulesClassifier;
 use crate::db::repository::{AppRepository, MetricsRepository, NewSession, SessionRepository};
-use crate::events::{
-    emit_activity_updated, emit_distraction_alert, emit_idle_changed,
-    emit_metrics_updated, emit_session_ended,
-};
 use crate::events::types::{
     AppEvent, DistractionAlertPayload, MetricsUpdatedPayload, SessionEndedPayload, SessionInfo,
+};
+use crate::events::{
+    emit_activity_updated, emit_distraction_alert, emit_idle_changed, emit_metrics_updated,
+    emit_session_ended,
 };
 use crate::state::{ActivityCache, AppState};
 use crate::tracker::idle_detector::IdleDetector;
 use crate::tracker::session_manager::SessionManager;
 
-pub async fn start(
-    state: AppState,
-    app: AppHandle,
-    mut event_rx: mpsc::Receiver<AppEvent>,
-) {
+pub async fn start(state: AppState, app: AppHandle, mut event_rx: mpsc::Receiver<AppEvent>) {
     let poll_ms = state.config.read().await.poll_interval_ms;
 
     tauri::async_runtime::spawn(crate::tracker::window_tracker::run(
@@ -48,10 +44,8 @@ pub async fn start(
                 info!("Shutdown — finalizing session");
                 if let Some(mut session) = session_mgr.finalize() {
                     let cfg = state.config.read().await;
-                    let classifier = RulesClassifier::with_config(
-                        &cfg.productive_apps,
-                        &cfg.distraction_apps,
-                    );
+                    let classifier =
+                        RulesClassifier::with_config(&cfg.productive_apps, &cfg.distraction_apps);
                     session.category = classifier
                         .classify(&session.exe, &session.exe_path)
                         .to_string();
@@ -113,10 +107,8 @@ pub async fn start(
                 if let Some(mut session) = session_mgr.on_window_changed(info.clone()) {
                     // Re-classify with current config so user changes take effect immediately.
                     let cfg = state.config.read().await;
-                    let classifier = RulesClassifier::with_config(
-                        &cfg.productive_apps,
-                        &cfg.distraction_apps,
-                    );
+                    let classifier =
+                        RulesClassifier::with_config(&cfg.productive_apps, &cfg.distraction_apps);
                     session.category = classifier
                         .classify(&session.exe, &session.exe_path)
                         .to_string();
@@ -174,11 +166,19 @@ async fn persist_and_notify(
 
     let app_repo = AppRepository::new(&pool);
     let app_id = match app_repo
-        .upsert(&session.exe, &session.exe_path, category_id, session.duration_ms)
+        .upsert(
+            &session.exe,
+            &session.exe_path,
+            category_id,
+            session.duration_ms,
+        )
         .await
     {
         Ok(id) => id,
-        Err(e) => { error!(exe = %session.exe, "upsert app: {e}"); return; }
+        Err(e) => {
+            error!(exe = %session.exe, "upsert app: {e}");
+            return;
+        }
     };
 
     let sess_repo = SessionRepository::new(&pool);
@@ -189,13 +189,17 @@ async fn persist_and_notify(
         duration_ms: session.duration_ms,
     };
     if let Err(e) = sess_repo.insert(&new_sess).await {
-        error!(exe = %session.exe, "insert session: {e}"); return;
+        error!(exe = %session.exe, "insert session: {e}");
+        return;
     }
 
     let date = session.started_at.date_naive();
     let metrics = match sess_repo.compute_metrics(date).await {
         Ok(m) => m,
-        Err(e) => { error!(date = %date, "compute_metrics: {e}"); return; }
+        Err(e) => {
+            error!(date = %date, "compute_metrics: {e}");
+            return;
+        }
     };
 
     let metrics_repo = MetricsRepository::new(&pool);
@@ -211,15 +215,18 @@ async fn persist_and_notify(
         c.today_productive_ms = metrics.productive_ms;
     }
 
-    emit_metrics_updated(&app, &MetricsUpdatedPayload {
-        date: date.to_string(),
-        focus_score: metrics.focus_score,
-        total_ms: metrics.total_ms,
-        productive_ms: metrics.productive_ms,
-        distraction_ms: metrics.distraction_ms,
-        neutral_ms: metrics.neutral_ms,
-        session_count: metrics.session_count,
-    });
+    emit_metrics_updated(
+        &app,
+        &MetricsUpdatedPayload {
+            date: date.to_string(),
+            focus_score: metrics.focus_score,
+            total_ms: metrics.total_ms,
+            productive_ms: metrics.productive_ms,
+            distraction_ms: metrics.distraction_ms,
+            neutral_ms: metrics.neutral_ms,
+            session_count: metrics.session_count,
+        },
+    );
 
     update_tray_tooltip(&app, metrics.focus_score as u32, metrics.total_ms);
 }

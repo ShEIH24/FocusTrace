@@ -42,6 +42,10 @@ pub fn get_process_info(pid: u32) -> Option<ProcessInfo> {
             .unwrap_or("unknown")
             .to_string();
 
-        Some(ProcessInfo { pid, name, exe_path })
+        Some(ProcessInfo {
+            pid,
+            name,
+            exe_path,
+        })
     }
 }

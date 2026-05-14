@@ -41,10 +41,7 @@ pub fn analyze_context_switching(
 }
 
 /// Returns `(rapid_switch_count, sprees)`.
-fn detect_rapid_sprees(
-    sessions: &[SessionInfo],
-    cfg: &SwitchConfig,
-) -> (usize, Vec<SwitchSpree>) {
+fn detect_rapid_sprees(sessions: &[SessionInfo], cfg: &SwitchConfig) -> (usize, Vec<SwitchSpree>) {
     let mut rapid_count = 0usize;
     let mut sprees: Vec<SwitchSpree> = Vec::new();
 

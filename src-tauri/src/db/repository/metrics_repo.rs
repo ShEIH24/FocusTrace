@@ -21,11 +21,7 @@ impl<'a> MetricsRepository<'a> {
     }
 
     /// Inserts or replaces the daily metrics row for `date`.
-    pub async fn upsert(
-        &self,
-        date: NaiveDate,
-        m: &DailyMetricsInput,
-    ) -> Result<(), AppError> {
+    pub async fn upsert(&self, date: NaiveDate, m: &DailyMetricsInput) -> Result<(), AppError> {
         let now = Utc::now().to_rfc3339();
         let date_str = date.to_string();
 

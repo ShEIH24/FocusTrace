@@ -28,8 +28,18 @@ pub fn detect_focus_sessions(sessions: &[SessionInfo], cfg: &FocusThresholds) ->
                 let gap = (s.started_at - b_end).num_milliseconds();
                 if gap <= cfg.merge_gap_ms {
                     // Promote current session to dominant if it outweighs the block so far
-                    let dominant = if s.duration_ms > b_ms { s.exe.clone() } else { b_app };
-                    Some((b_start, s_end.max(b_end), b_ms + s.duration_ms, dominant, b_count + 1))
+                    let dominant = if s.duration_ms > b_ms {
+                        s.exe.clone()
+                    } else {
+                        b_app
+                    };
+                    Some((
+                        b_start,
+                        s_end.max(b_end),
+                        b_ms + s.duration_ms,
+                        dominant,
+                        b_count + 1,
+                    ))
                 } else {
                     flush_block(b_start, b_end, b_ms, b_app, b_count, cfg, &mut result);
                     Some((s.started_at, s_end, s.duration_ms, s.exe.clone(), 1))
@@ -152,7 +162,7 @@ mod tests {
     #[test]
     fn sessions_beyond_gap_produce_separate_blocks() {
         let cfg = FocusThresholds::default();
-        let s1 = make_session(0, 700_000, "code.exe");        // 11.6 min
+        let s1 = make_session(0, 700_000, "code.exe"); // 11.6 min
         let s2 = make_session(1_000_000, 700_000, "code.exe"); // gap 300s > 120s
         let blocks = detect_focus_sessions(&vec![s1, s2], &cfg);
         assert_eq!(blocks.len(), 2);

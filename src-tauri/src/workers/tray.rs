@@ -37,8 +37,8 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
             "quit" => {
                 // Send Shutdown through the event channel so the coordinator
                 // can finalize the current session before the process exits.
-                use crate::state::AppState;
                 use crate::events::types::AppEvent;
+                use crate::state::AppState;
                 if let Some(state) = app.try_state::<AppState>() {
                     let _ = state.event_tx.try_send(AppEvent::Shutdown);
                 }
