@@ -33,7 +33,7 @@ fn same_window(a: &Option<WindowInfo>, b: &Option<WindowInfo>) -> bool {
 ///
 /// Adaptive sleep:
 /// - `FAST_POLL_MS`   while a candidate is debouncing or within `FAST_COOLDOWN_MS`
-///                    of the last confirmed switch.
+///   of the last confirmed switch.
 /// - `poll_interval_ms` (from config, default 1 s) during stable periods.
 pub async fn run(tx: mpsc::Sender<AppEvent>, poll_interval_ms: u64) {
     // Last window for which we emitted WindowChanged.
@@ -51,12 +51,10 @@ pub async fn run(tx: mpsc::Sender<AppEvent>, poll_interval_ms: u64) {
             candidate = None;
         } else {
             // Foreground differs from confirmed; decide whether to debounce.
-            let same_as_candidate = candidate
-                .as_ref()
-                .map_or(false, |(cand, _)| match &current {
-                    Some(cur) => cand.pid == cur.pid && cand.title == cur.title,
-                    None => false,
-                });
+            let same_as_candidate = candidate.as_ref().is_some_and(|(cand, _)| match &current {
+                Some(cur) => cand.pid == cur.pid && cand.title == cur.title,
+                None => false,
+            });
 
             if same_as_candidate {
                 // Candidate is holding steady — check if debounce period elapsed.
@@ -94,7 +92,7 @@ pub async fn run(tx: mpsc::Sender<AppEvent>, poll_interval_ms: u64) {
         // so we catch rapid multi-step switches with low latency. Fall back to the
         // configured (slower) interval during idle stable periods to save CPU.
         let in_fast_zone =
-            last_confirmed_at.map_or(false, |t| t.elapsed().as_millis() < FAST_COOLDOWN_MS);
+            last_confirmed_at.is_some_and(|t| t.elapsed().as_millis() < FAST_COOLDOWN_MS);
 
         let sleep_ms = if candidate.is_some() || in_fast_zone {
             FAST_POLL_MS

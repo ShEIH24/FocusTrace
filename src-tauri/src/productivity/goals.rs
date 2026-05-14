@@ -115,7 +115,7 @@ pub async fn compute_streak(
     loop {
         if productive_dates.contains(&d.to_string()) {
             current += 1;
-            d = d - Duration::days(1);
+            d -= Duration::days(1);
         } else {
             break;
         }
@@ -132,7 +132,7 @@ pub async fn compute_streak(
         } else {
             run = 0;
         }
-        day_iter = day_iter + Duration::days(1);
+        day_iter += Duration::days(1);
     }
 
     // Last 7 days (oldest first).

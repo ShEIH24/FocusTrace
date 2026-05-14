@@ -94,7 +94,7 @@ impl AnalyticsEngine {
         while d <= end_date {
             let sessions = get_sessions_for_date(&self.pool, d).await?;
             day_data.push((d, sessions));
-            d = d + chrono::Duration::days(1);
+            d += chrono::Duration::days(1);
         }
 
         let config = self.config.clone();
@@ -221,7 +221,7 @@ fn merge_top_apps(reports: &[DayReport], total_ms: i64) -> Vec<AppBreakdown> {
         })
         .collect();
 
-    result.sort_by(|a, b| b.total_ms.cmp(&a.total_ms));
+    result.sort_by_key(|b| std::cmp::Reverse(b.total_ms));
     result.truncate(10);
     result
 }

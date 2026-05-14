@@ -281,7 +281,7 @@ async fn handle_command(
                 record_session(
                     pool,
                     state.phase.label(),
-                    elapsed as u64,
+                    elapsed,
                     false,
                     state.current_db_id.take(),
                 )

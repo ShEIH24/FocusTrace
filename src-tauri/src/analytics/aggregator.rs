@@ -34,7 +34,7 @@ pub fn aggregate_by_app(sessions: &[SessionInfo], total_ms: i64) -> Vec<AppBreak
         })
         .collect();
 
-    result.sort_by(|a, b| b.total_ms.cmp(&a.total_ms));
+    result.sort_by_key(|b| std::cmp::Reverse(b.total_ms));
     result
 }
 
@@ -61,7 +61,7 @@ pub fn aggregate_by_category(apps: &[AppBreakdown], total_ms: i64) -> Vec<Catego
         })
         .collect();
 
-    result.sort_by(|a, b| b.total_ms.cmp(&a.total_ms));
+    result.sort_by_key(|b| std::cmp::Reverse(b.total_ms));
     result
 }
 

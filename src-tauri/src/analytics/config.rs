@@ -1,20 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct AnalyticsConfig {
     pub weights: ScoringWeights,
     pub focus: FocusThresholds,
     pub switching: SwitchConfig,
-}
-
-impl Default for AnalyticsConfig {
-    fn default() -> Self {
-        Self {
-            weights: ScoringWeights::default(),
-            focus: FocusThresholds::default(),
-            switching: SwitchConfig::default(),
-        }
-    }
 }
 
 /// Relative weights for the four scoring components (should sum to ~1.0).

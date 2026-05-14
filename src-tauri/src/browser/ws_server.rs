@@ -16,6 +16,8 @@ use tracing::{debug, info, warn};
 use crate::browser::category::extract_domain;
 use crate::browser::{BrowserState, TabInfo};
 
+type LastTab = Arc<Mutex<Option<(TabInfo, chrono::DateTime<Utc>)>>>;
+
 // ---------------------------------------------------------------------------
 // Wire protocol types
 // ---------------------------------------------------------------------------
@@ -108,10 +110,10 @@ async fn handle_connection(
     };
 
     let authed = match first_msg {
-        Message::Text(text) => match serde_json::from_str::<InboundMsg>(&text) {
-            Ok(InboundMsg::Auth { token }) if token == state.ws_token => true,
-            _ => false,
-        },
+        Message::Text(text) => matches!(
+            serde_json::from_str::<InboundMsg>(&text),
+            Ok(InboundMsg::Auth { token }) if token == state.ws_token
+        ),
         _ => false,
     };
 
@@ -120,17 +122,17 @@ async fn handle_connection(
             reason: "invalid token",
         })
         .unwrap_or_default();
-        let _ = tx.send(Message::Text(resp.into())).await;
+        let _ = tx.send(Message::Text(resp)).await;
         return;
     }
 
     let resp = serde_json::to_string(&OutboundMsg::AuthOk { version: 1 }).unwrap_or_default();
-    if tx.send(Message::Text(resp.into())).await.is_err() {
+    if tx.send(Message::Text(resp)).await.is_err() {
         return;
     }
 
     // ── Message loop ─────────────────────────────────────────────────────────
-    let last_tab: Arc<Mutex<Option<(TabInfo, chrono::DateTime<Utc>)>>> = Arc::new(Mutex::new(None));
+    let last_tab: LastTab = Arc::new(Mutex::new(None));
 
     while let Some(msg_result) = rx.next().await {
         let msg = match msg_result {
@@ -152,7 +154,7 @@ async fn handle_connection(
                 }
                 Ok(InboundMsg::Ping) => {
                     let pong = serde_json::to_string(&OutboundMsg::Pong).unwrap_or_default();
-                    let _ = tx.send(Message::Text(pong.into())).await;
+                    let _ = tx.send(Message::Text(pong)).await;
                 }
                 _ => {}
             },
@@ -177,7 +179,7 @@ async fn on_tab_update(
     url: &str,
     title: &str,
     browser: &str,
-    last_tab: &Arc<Mutex<Option<(TabInfo, chrono::DateTime<Utc>)>>>,
+    last_tab: &LastTab,
     state: &Arc<BrowserState>,
     app: &AppHandle,
     pool: &SqlitePool,
@@ -213,7 +215,7 @@ async fn on_tab_update(
     // Persist the previous tab visit.
     let mut lock = last_tab.lock().await;
     if let Some((prev, prev_ts)) = lock.take() {
-        let duration_ms = (now - prev_ts).num_milliseconds().max(0) as i64;
+        let duration_ms = (now - prev_ts).num_milliseconds().max(0);
         if duration_ms > 500 {
             persist_event(pool, &prev, prev_ts, now, duration_ms).await;
         }
@@ -230,14 +232,14 @@ async fn on_tab_update(
 
 async fn on_tab_deactivated(
     _browser: &str,
-    last_tab: &Arc<Mutex<Option<(TabInfo, chrono::DateTime<Utc>)>>>,
+    last_tab: &LastTab,
     state: &Arc<BrowserState>,
     pool: &SqlitePool,
 ) {
     let mut lock = last_tab.lock().await;
     if let Some((tab, ts)) = lock.take() {
         let now = Utc::now();
-        let duration_ms = (now - ts).num_milliseconds().max(0) as i64;
+        let duration_ms = (now - ts).num_milliseconds().max(0);
         if duration_ms > 500 {
             persist_event(pool, &tab, ts, now, duration_ms).await;
         }
