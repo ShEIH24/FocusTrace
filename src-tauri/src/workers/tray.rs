@@ -16,7 +16,7 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
 
     let menu = Menu::with_items(app, &[&show_item, &sep, &quit_item])?;
 
-    TrayIconBuilder::with_id("main-tray")
+    let mut builder = TrayIconBuilder::with_id("main-tray")
         .tooltip("FocusTrace")
         .menu(&menu)
         .show_menu_on_left_click(false)
@@ -49,8 +49,13 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
                 });
             }
             _ => {}
-        })
-        .build(app)?;
+        });
+
+    if let Some(icon) = app.default_window_icon() {
+        builder = builder.icon(icon.clone());
+    }
+
+    builder.build(app)?;
 
     Ok(())
 }
