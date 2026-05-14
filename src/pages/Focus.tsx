@@ -180,13 +180,13 @@ export default function Focus() {
       {/* таймер и цели */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* карточка таймера */}
-        <div className="card flex flex-col items-center py-8">
+        <div className="card flex flex-col items-center py-8 px-5">
           <PomodoroTimer />
         </div>
 
         {/* цели и серия */}
         <div className="flex flex-col gap-4">
-          <div className="card flex flex-col gap-4">
+          <div className="card flex flex-col gap-4 p-5">
             <div className="flex items-center gap-2">
               <TbTarget className="w-4 h-4 text-indigo-400" />
               <span className="text-sm font-medium text-zinc-300">{t.todaysGoals}</span>
@@ -194,7 +194,7 @@ export default function Focus() {
             <GoalProgress />
           </div>
 
-          <div className="card flex flex-col gap-4">
+          <div className="card flex flex-col gap-4 p-5">
             <div className="flex items-center gap-2">
               <TbFlame className="w-4 h-4 text-orange-400" />
               <span className="text-sm font-medium text-zinc-300">{t.streak}</span>
@@ -205,7 +205,7 @@ export default function Focus() {
       </div>
 
       {/* режим фокуса */}
-      <div className="card flex items-center justify-between">
+      <div className="card flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
           <TbBrain className="w-5 h-5 text-violet-400" />
           <div>
@@ -218,7 +218,7 @@ export default function Focus() {
 
       {/* настройки таймера */}
       {config && (
-        <div className="card flex flex-col gap-4">
+        <div className="card flex flex-col gap-4 p-5">
           <div className="flex items-center gap-2">
             <TbPlayerPlay className="w-4 h-4 text-zinc-400" />
             <span className="text-sm font-medium text-zinc-300">{t.timerSettings}</span>
