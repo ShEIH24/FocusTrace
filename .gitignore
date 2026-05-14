@@ -68,6 +68,8 @@ logs/
 *.sln.docstates
 
 # ── Windows ─────────────────────────────────────────────────
+focustrace.key
+focustrace.key.pub
 Thumbs.db
 Thumbs.db:encryptable
 ehthumbs.db
