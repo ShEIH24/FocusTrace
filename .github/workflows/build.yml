@@ -1,0 +1,185 @@
+name: Build & Release FocusTrace
+
+on:
+  push:
+    tags:
+      - 'v*'         # Запускается при пуше тега v0.1.0, v1.2.3 и т.д.
+  pull_request:
+    branches:
+      - main         # CI проверка на каждый PR в main
+  workflow_dispatch: # Ручной запуск из GitHub UI
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  # ──────────────────────────────────────────────────────────
+  # JOB 1: Проверка кода (быстрая, без сборки бинарника)
+  # ──────────────────────────────────────────────────────────
+  check:
+    name: Check & Lint
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Get pnpm store path
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $env:GITHUB_OUTPUT
+
+      - name: Cache pnpm
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install frontend deps
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript check
+        run: pnpm type-check
+
+      - name: Rust fmt check
+        working-directory: src-tauri
+        run: cargo fmt --check
+
+      - name: Clippy
+        working-directory: src-tauri
+        run: cargo clippy --no-default-features -- -D warnings
+
+  # ──────────────────────────────────────────────────────────
+  # JOB 2: Сборка релизного бинарника и инсталлятора
+  # ──────────────────────────────────────────────────────────
+  build:
+    name: Build Installer
+    runs-on: windows-latest
+    needs: check  # Запускается только если check прошёл
+    if: startsWith(github.ref, 'refs/tags/v')  # Только при пуше тега
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Get pnpm store path
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $env:GITHUB_OUTPUT
+
+      - name: Cache pnpm
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install frontend deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'FocusTrace ${{ github.ref_name }}'
+          releaseBody: |
+            ## FocusTrace ${{ github.ref_name }}
+
+            Скачай установщик ниже и запусти его.
+
+            **Системные требования:** Windows 10 версии 1809+
+
+            Полные release notes: [RELEASE_NOTES.md](https://github.com/${{ github.repository }}/blob/main/RELEASE_NOTES.md)
+          releaseDraft: true    # Создаёт черновик — ты публикуешь вручную
+          prerelease: false
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FocusTrace-installer-${{ github.ref_name }}
+          path: |
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/msi/*.msi
+          retention-days: 30
+
+  # ──────────────────────────────────────────────────────────
+  # JOB 3: CI сборка для PR (без публикации релиза)
+  # ──────────────────────────────────────────────────────────
+  build-pr:
+    name: Build Check (PR)
+    runs-on: windows-latest
+    needs: check
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install frontend deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm vite build
+
+      - name: Build Rust (debug)
+        working-directory: src-tauri
+        run: cargo build
