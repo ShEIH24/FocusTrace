@@ -20,6 +20,8 @@ pub struct WeeklySummary {
     pub scores: Vec<f32>,
     pub total_active_ms: i64,
     pub avg_score: f32,
+    /// Total tracked milliseconds per day, same order as `days`.
+    pub total_ms_per_day: Vec<i64>,
 }
 
 // ---------------------------------------------------------------------------

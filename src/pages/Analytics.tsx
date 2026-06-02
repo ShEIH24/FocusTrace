@@ -89,7 +89,7 @@ export default function Analytics() {
             />
             <StatCard
               label={t.daysTracked}
-              value={data.days.filter((_, i) => (data.scores[i] ?? 0) > 0).length}
+              value={data.days.filter((_, i) => (data.totalMsPerDay?.[i] ?? 0) > 0).length}
               sub={`${t.of} ${data.days.length}`}
               icon={<TbCalendarStats size={16} />}
               accent="indigo"

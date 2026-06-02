@@ -8,4 +8,5 @@ export interface WeeklySummary {
   scores: number[];
   total_active_ms: number;
   avg_score: number;
+  totalMsPerDay: number[];
 }

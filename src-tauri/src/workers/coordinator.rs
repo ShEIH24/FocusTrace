@@ -49,13 +49,20 @@ pub async fn start(state: AppState, app: AppHandle, mut event_rx: mpsc::Receiver
                     session.category = classifier
                         .classify(&session.exe, &session.exe_path)
                         .to_string();
+                    let lower = session.exe.to_lowercase();
+                    let is_excluded = cfg
+                        .excluded_apps
+                        .iter()
+                        .any(|e| lower.contains(e.to_lowercase().as_str()));
                     drop(cfg);
-                    let pool = state.pool.clone();
-                    let cache = state.cache.clone();
-                    let handle = app.clone();
-                    tauri::async_runtime::spawn(async move {
-                        persist_and_notify(pool, cache, session, handle).await;
-                    });
+                    if !is_excluded {
+                        let pool = state.pool.clone();
+                        let cache = state.cache.clone();
+                        let handle = app.clone();
+                        tauri::async_runtime::spawn(async move {
+                            persist_and_notify(pool, cache, session, handle).await;
+                        });
+                    }
                 }
                 break;
             }
@@ -144,13 +151,22 @@ pub async fn start(state: AppState, app: AppHandle, mut event_rx: mpsc::Receiver
             }
 
             AppEvent::SessionEnded(session) => {
-                emit_session_ended(&app, &SessionEndedPayload::from(&session));
-                let pool = state.pool.clone();
-                let cache = state.cache.clone();
-                let handle = app.clone();
-                tauri::async_runtime::spawn(async move {
-                    persist_and_notify(pool, cache, session, handle).await;
-                });
+                let is_excluded = {
+                    let cfg = state.config.read().await;
+                    let lower = session.exe.to_lowercase();
+                    cfg.excluded_apps
+                        .iter()
+                        .any(|e| lower.contains(e.to_lowercase().as_str()))
+                };
+                if !is_excluded {
+                    emit_session_ended(&app, &SessionEndedPayload::from(&session));
+                    let pool = state.pool.clone();
+                    let cache = state.cache.clone();
+                    let handle = app.clone();
+                    tauri::async_runtime::spawn(async move {
+                        persist_and_notify(pool, cache, session, handle).await;
+                    });
+                }
             }
         }
     }

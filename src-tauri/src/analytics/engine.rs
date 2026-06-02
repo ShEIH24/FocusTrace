@@ -45,6 +45,7 @@ impl AnalyticsEngine {
         let today = chrono::Utc::now().date_naive();
         let mut days = Vec::with_capacity(7);
         let mut scores = Vec::with_capacity(7);
+        let mut total_ms_per_day = Vec::with_capacity(7);
         let mut total_active_ms: i64 = 0;
 
         for i in 0..7i64 {
@@ -54,6 +55,7 @@ impl AnalyticsEngine {
             let day_ms: i64 = sessions.iter().map(|s| s.duration_ms).sum();
             days.push(date.to_string());
             scores.push(score);
+            total_ms_per_day.push(day_ms);
             total_active_ms += day_ms;
         }
 
@@ -68,6 +70,7 @@ impl AnalyticsEngine {
             scores,
             total_active_ms,
             avg_score,
+            total_ms_per_day,
         })
     }
 

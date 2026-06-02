@@ -126,6 +126,8 @@ export interface Translations {
   appClassificationDesc: string;
   productiveApps: string;
   distractionApps: string;
+  excludedApps: string;
+  excludedAppsDesc: string;
   data: string;
   dataDirectory: string;
   dataDirectoryDesc: string;
@@ -319,6 +321,8 @@ const en: Translations = {
   appClassificationDesc: "One executable name per line (e.g. Code.exe)",
   productiveApps: "Productive apps",
   distractionApps: "Distraction apps",
+  excludedApps: "Excluded from tracking",
+  excludedAppsDesc: "These processes are not recorded. Browser activity (sites visited in Edge, Chrome, etc.) is still tracked via the extension.",
   data: "Data",
   dataDirectory: "Data directory",
   dataDirectoryDesc: "Where FocusTrace stores your data",
@@ -503,6 +507,8 @@ const ru: Translations = {
   appClassificationDesc: "По одному имени exe на строку (напр. Code.exe)",
   productiveApps: "Продуктивные",
   distractionApps: "Отвлекающие",
+  excludedApps: "Исключить из отслеживания",
+  excludedAppsDesc: "Эти процессы не записываются. Активность браузера (сайты, открытые в Edge, Chrome и т.д.) по-прежнему отслеживается через расширение.",
   data: "Данные",
   dataDirectory: "Папка с данными",
   dataDirectoryDesc: "Где FocusTrace хранит данные",

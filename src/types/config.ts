@@ -4,6 +4,7 @@ export interface AppConfig {
   data_dir: string;
   productive_apps: string[];
   distraction_apps: string[];
+  excluded_apps: string[];
 }
 
 export interface AppRule {

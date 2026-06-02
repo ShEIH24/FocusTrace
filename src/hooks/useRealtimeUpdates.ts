@@ -224,6 +224,10 @@ export function useRealtimeUpdates(): void {
 
     onBrowserTabUpdated((tab) => {
       setCurrentTab(tab);
+      // The previous tab's event was just saved to DB — invalidate today's browser history
+      // so the Timeline reflects the new entry without requiring a manual refresh.
+      const today = new Date().toISOString().slice(0, 10);
+      queryClient.invalidateQueries({ queryKey: ["browserHistory", today] });
     }).then((fn) => {
       if (!cancel) unlisten = fn;
       else fn();
@@ -233,5 +237,5 @@ export function useRealtimeUpdates(): void {
       cancel = true;
       unlisten?.();
     };
-  }, [setCurrentTab]);
+  }, [setCurrentTab, queryClient]);
 }

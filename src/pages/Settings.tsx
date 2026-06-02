@@ -177,6 +177,7 @@ export default function Settings() {
   const [form, setForm] = useState<Partial<AppConfig>>({});
   const [productiveText, setProductiveText] = useState("");
   const [distractionText, setDistractionText] = useState("");
+  const [excludedText, setExcludedText] = useState("");
 
   // браузерный трекинг
   const [browserToken, setBrowserToken] = useState("");
@@ -262,6 +263,7 @@ export default function Settings() {
       setForm(config);
       setProductiveText(appsToText(config.productive_apps));
       setDistractionText(appsToText(config.distraction_apps));
+      setExcludedText(appsToText(config.excluded_apps ?? []));
     }
   }, [config]);
 
@@ -291,6 +293,7 @@ export default function Settings() {
       ...form,
       productive_apps: textToApps(productiveText),
       distraction_apps: textToApps(distractionText),
+      excluded_apps: textToApps(excludedText),
     };
     setSaving(true);
     try {
@@ -452,6 +455,20 @@ export default function Settings() {
               value={distractionText}
               onChange={(e) => setDistractionText(e.target.value)}
               placeholder="chrome.exe&#10;Discord.exe&#10;..."
+              className="input-base font-mono resize-y"
+            />
+          </div>
+          <div>
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wide">
+              <span className="w-2 h-2 rounded-full bg-zinc-400 inline-block" />
+              {t.excludedApps}
+            </label>
+            <p className="text-xs text-muted mb-2">{t.excludedAppsDesc}</p>
+            <textarea
+              rows={3}
+              value={excludedText}
+              onChange={(e) => setExcludedText(e.target.value)}
+              placeholder="msedge.exe&#10;chrome.exe&#10;..."
               className="input-base font-mono resize-y"
             />
           </div>

@@ -11,7 +11,7 @@ import { useTauriEvent } from "@/hooks/useTauriEvents";
 import { api } from "@/ipc/commands";
 import type { WindowInfo } from "@/types/activity";
 
-const CURRENT_VERSION = "0.1.2";
+const CURRENT_VERSION = "0.1.3";
 const GITHUB_REPO = "ShEIH24/FocusTrace";
 
 function isNewerVersion(latest: string, current: string): boolean {

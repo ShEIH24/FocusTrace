@@ -8,6 +8,10 @@ pub struct AppConfig {
     pub data_dir: PathBuf,
     pub productive_apps: Vec<String>,
     pub distraction_apps: Vec<String>,
+    /// Apps whose process sessions are excluded from tracking.
+    /// Browser events (e.g. sites in Edge) are still recorded via the extension.
+    #[serde(default)]
+    pub excluded_apps: Vec<String>,
 }
 
 impl AppConfig {
@@ -35,6 +39,7 @@ impl AppConfig {
             idle_threshold_secs: 120,
             poll_interval_ms: 1000,
             data_dir: data_dir.to_path_buf(),
+            excluded_apps: vec![],
             productive_apps: vec![
                 // редакторы и ide
                 "code".into(),
