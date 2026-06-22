@@ -15,7 +15,7 @@
 [![SQLite](https://img.shields.io/badge/SQLite-3.x-003B57.svg?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 [![License](https://img.shields.io/badge/license-EULA-green.svg)](LICENSE.txt)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%2B-0078D4.svg?logo=windows&logoColor=white)](https://www.microsoft.com/windows)
-[![Version](https://img.shields.io/badge/version-0.2.2-lightgrey.svg)](https://github.com/ShEIH24/FocusTrace/releases)
+[![Version](https://img.shields.io/badge/version-0.1.3-lightgrey.svg)](https://github.com/ShEIH24/FocusTrace/releases)
 
 </div>
 
